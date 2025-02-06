@@ -1,32 +1,56 @@
 # .github/workflows/nodejs.yml
 
+# Nome do workflow. Este nome aparecerá na interface do GitHub Actions.
 name: Node.js CI
 
+# 'on' define os gatilhos que irão acionar este workflow.
 on:
+  # Quando houver um push (envio de código) na branch 'main', o workflow será executado.
   push:
     branches: [ main ]
+  # Quando for aberto um pull request direcionado à branch 'main', o workflow será executado.
   pull_request:
     branches: [ main ]
+  # 'schedule' configura um gatilho baseado em tempo usando a sintaxe cron.
+  # Neste exemplo, o workflow será executado automaticamente todos os dias à meia-noite (UTC).
+  schedule:
+    - cron: '0 0 * * *'  # Formato: minuto hora diaDoMes mês diaDaSemana. Aqui, '0 0 * * *' significa meia-noite todos os dias.
 
 jobs:
+  # Define um trabalho (job) chamado 'build'. Este job é responsável por configurar o ambiente,
+  # instalar dependências e executar os testes do projeto.
   build:
+    # 'runs-on' especifica o sistema operacional da máquina virtual onde o job será executado.
+    # Aqui, usamos a versão mais recente do Ubuntu.
     runs-on: ubuntu-latest
 
+    # 'strategy.matrix' permite que o mesmo job seja executado em diferentes configurações.
+    # Neste caso, estamos testando o projeto em duas versões do Node.js: 14.x e 16.x.
     strategy:
       matrix:
         node-version: [14.x, 16.x]
 
+    # 'steps' define as etapas que serão executadas dentro deste job.
     steps:
+      # Passo 1: Checkout do repositório
       - name: Checkout do repositório
+        # Esta ação baixa o código fonte do repositório para a máquina virtual.
         uses: actions/checkout@v2
 
+      # Passo 2: Configurar o ambiente Node.js
       - name: Configurar Node.js
+        # Esta ação configura a versão do Node.js que será utilizada.
         uses: actions/setup-node@v2
         with:
+          # Seleciona a versão do Node.js definida na matriz de estratégia (14.x ou 16.x).
           node-version: ${{ matrix.node-version }}
 
+      # Passo 3: Instalar dependências
       - name: Instalar dependências
+        # Executa o comando 'npm install' para instalar todas as dependências listadas no arquivo package.json.
         run: npm install
 
+      # Passo 4: Executar Testes
       - name: Executar Testes
+        # Executa o comando 'npm test' para rodar os testes unitários do projeto.
         run: npm test
